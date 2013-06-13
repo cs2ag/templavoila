@@ -72,6 +72,15 @@ class tx_templavoila_datastructure_dbbase extends tx_templavoila_datastructure {
 	 * @return string
 	 */
 	public function getDataprotXML() {
+		if (strpos($this->row['dataprot'], '<') === FALSE) {
+			$this->row['dataprot_file'] = $this->row['dataprot'];
+			if (is_file(PATH_site . $this->row['dataprot'])) {
+				$this->row['dataprot'] = t3lib_div::getUrl(PATH_site . $this->row['dataprot']);
+			} else {
+				$this->row['dataprot'] = sprintf('File \'%s\' was not found', $this->row['dataprot']);
+			}
+		}
+
 		return $this->row['dataprot'];
 	}
 
