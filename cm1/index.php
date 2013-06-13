@@ -574,6 +574,14 @@ class tx_templavoila_cm1 extends t3lib_SCbase {
 					$dsREC['dataprot'] = t3lib_div::getURL(t3lib_div::getFileAbsFileName($toREC['datastructure']));
 				} else {
 					$dsREC = t3lib_BEfunc::getRecordWSOL('tx_templavoila_datastructure', $toREC['datastructure']);
+					if (strpos($dsREC['dataprot'], '<') === FALSE) {
+						$dsREC['dataprot_file'] = $dsREC['dataprot'];
+						if (is_file(PATH_site . $dsREC['dataprot'])) {
+							$dsREC['dataprot'] = t3lib_div::getUrl(PATH_site . $dsREC['dataprot']);
+						} else {
+							$dsREC['dataprot'] = sprintf('File \'%s\' was not found', $dsREC['dataprot']);
+						}
+					}
 				}
 			}
 
@@ -586,6 +594,9 @@ class tx_templavoila_cm1 extends t3lib_SCbase {
 					$sesDat['currentMappingInfo'] = $tM['MappingInfo'];
 					$sesDat['currentMappingInfo_head'] = $tM['MappingInfo_head'];
 					$ds = t3lib_div::xml2array($dsREC['dataprot']);
+					if ($dsREC['dataprot_file']) {
+						$sesDat['dataprot_file'] = $dsREC['dataprot_file'];
+					}
 					$sesDat['dataStruct'] = $sesDat['autoDS'] = $ds; // Just set $ds, not only its ROOT! Otherwise <meta> will be lost.
 					$GLOBALS['BE_USER']->setAndSaveSessionData($this->sessionKey, $sesDat);
 				} else {
@@ -820,12 +831,16 @@ class tx_templavoila_cm1 extends t3lib_SCbase {
 							$path = PATH_site . $dsREC['uid'];
 							t3lib_div::writeFile($path, $dataProtXML);
 						} else {
-							$dataArr=array();
-							$dataArr['tx_templavoila_datastructure'][$dsREC['uid']]['dataprot'] = $dataProtXML;
+							if ($sesDat['dataprot_file']) {
+								t3lib_div::writeFile($sesDat['dataprot_file'], $dataProtXML);
+							} else {
+								$dataArr = array();
+								$dataArr['tx_templavoila_datastructure'][$dsREC['uid']]['dataprot'] = $dataProtXML;
 
-								// process data
-							$tce->start($dataArr,array());
-							$tce->process_datamap();
+									// process data
+								$tce->start($dataArr,array());
+								$tce->process_datamap();
+							}
 						}
 
 							// TO:
@@ -2294,7 +2309,16 @@ class tx_templavoila_cm1 extends t3lib_SCbase {
 		if ($file)	{
 			$dataStruct = t3lib_div::xml2array(t3lib_div::getUrl($file));
 		} else {
-			$dataStruct = t3lib_div::xml2array($datString);
+			if (strpos($datString, '<') === FALSE) {
+				if (is_file(PATH_site . $datString)) {
+					$datString = t3lib_div::getUrl(PATH_site . $datString);
+					$dataStruct = t3lib_div::xml2array($datString);
+				} else {
+					$dataStruct = sprintf('File \'%s\' was not found', $datString);
+				}
+			} else {
+				$dataStruct = t3lib_div::xml2array($datString);
+			}
 		}
 		return $dataStruct;
 	}

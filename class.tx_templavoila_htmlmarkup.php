@@ -724,6 +724,14 @@ class tx_templavoila_htmlmarkup {
 				}
 			}
 
+			if (strpos($rec['localprocessing'], '<') === FALSE) {
+				if (is_file(PATH_site.$rec['localprocessing'])) {
+					$rec['localprocessing'] = t3lib_div::getUrl(PATH_site . $rec['localprocessing']);
+				} else {
+					$rec['localprocessing'] = sprintf('File \'%s\' was not found', $rec['localprocessing']);
+				}
+			}
+
 			return $rec;
 		}
 		return false;
