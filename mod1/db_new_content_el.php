@@ -521,6 +521,10 @@ class tx_templavoila_dbnewcontentel {
 							unset($wizardItems[$key]);
 							break;
 						} else {
+								//translate if need
+							if (strpos($fV, 'LLL:') === 0) {
+								$fV = $GLOBALS['LANG']->sL($fV);
+							}
 								// Add the parameter:
 							$wizardItems[$key]['params'].= '&defVals[tt_content]['.$fN.']='.rawurlencode($fV);
 							$tmp = explode('_', $key);
